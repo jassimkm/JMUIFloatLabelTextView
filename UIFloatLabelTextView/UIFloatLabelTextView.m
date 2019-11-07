@@ -91,29 +91,41 @@
 - (void)setupTextView
 {
     // TextView Padding
-    _horizontalPadding = 5.0f;
+    _horizontalPadding = 0.0f;
+    
     self.contentInset = UIEdgeInsetsMake(UI_FLOAT_LABEL_VERTICAL_INSET_OFFSET,
                                          0.0f,
                                          0.0f,
                                          0.0f);
+     
     
     // Text Alignment
-    [self setTextAlignment:NSTextAlignmentLeft];
-    
+    [self setTextAlignment:NSTextAlignmentNatural];
+  
     // Text Color
-    _storedTextColor = [UIColor blackColor];
+    if (@available(iOS 13.0, *)) {
+        _storedTextColor = [UIColor labelColor];
+        _placeholderTextColor = [UIColor placeholderTextColor];
+
+    } else {
+        // Fallback on earlier versions
+        _storedTextColor = [UIColor blackColor];
+        _placeholderTextColor = [UIColor lightGrayColor];
+
+    }
     
     // Placeholder Color
-    _placeholderTextColor = [UIColor lightGrayColor];
 }
 
 - (void)setupFloatLabel
 {
     // floatLabel
     _floatLabel = [UILabel new];
+    //_floatLabel.backgroundColor = UIColor.redColor;
+    
     _floatLabel.textColor = [UIColor blackColor];
-    _floatLabel.textAlignment = NSTextAlignmentLeft;
-    _floatLabel.font =[UIFont boldSystemFontOfSize:12.0f];
+    _floatLabel.textAlignment = NSTextAlignmentNatural;
+    _floatLabel.font = [UIFont fontWithName:@"Dubai-Regular" size:14.0f];
     _floatLabel.alpha = 0.0f;
     [_floatLabel setCenter:CGPointMake(_xOrigin, 0.0f)];
     [self addSubview:_floatLabel];
@@ -179,19 +191,24 @@
 {
     _floatLabel.alpha = (animationType == UIFloatLabelAnimationTypeShow) ? 1.0f : 0.0f;
     CGFloat yOrigin = (animationType == UIFloatLabelAnimationTypeShow) ? -UI_FLOAT_LABEL_VERTICAL_INSET_OFFSET : 0.0f;
+    /*
     _floatLabel.frame = CGRectMake(_xOrigin,
                                    yOrigin,
                                    CGRectGetWidth([_floatLabel frame]),
                                    CGRectGetHeight([_floatLabel frame]));
+*/
+    _floatLabel.frame = CGRectMake(_xOrigin,
+                                   yOrigin,
+                                   CGRectGetWidth([self frame]),
+                                   CGRectGetHeight([_floatLabel frame]));
 }
-
 - (void)updateRectForTextFieldGeneratedViaAutoLayout
 {
     // Do not shift the frame if textField is pre-populated
     if (![self.text length]) {
         _floatLabel.frame = CGRectMake(_xOrigin,
                                        0.0f,
-                                       CGRectGetWidth([_floatLabel frame]),
+                                       CGRectGetWidth([self frame]),
                                        CGRectGetHeight([_floatLabel frame]));
     }
 }
@@ -268,6 +285,7 @@
         } break;
             
         default: { // NSTextAlignmentLeft, NSTextAlignmentJustified, NSTextAlignmentNatural
+    
             _xOrigin = _horizontalPadding;
         } break;
     }
@@ -331,7 +349,7 @@
 {
     _placeholder = placeholder;
  
-    _floatLabel.text = _placeholder;
+    _floatLabel.text = [_placeholder uppercaseString];
     if (![self.text length]) {
         self.text = _placeholder;
         self.textColor = _placeholderTextColor;
